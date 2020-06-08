@@ -1,0 +1,162 @@
+第一周
+线性回归  h是θx  代价函数是最小二乘
+梯度下降：批量梯度下降（矩阵表示：正规方程）
+
+第二周
+梯度下降 1 特征缩放 帮助算法更快的收敛
+	     2 向量化
+
+第三周
+逻辑回归 h是sigmod（θx）代价函数是交叉熵
+过拟合 ：1 PCA算法 选择或者丢弃掉错误的特征
+         2 正则化  带约束条件的优化问题 
+			 L1正则化可以产生稀疏权重矩阵，即大部分w为0，只有少数w非0，可以用于特征选择
+			 L2正则化可以防止模型过拟合 权重衰减
+		 3 加大数据量
+		 4 dropout 正则化
+		   A2 = relu(Z2)
+           D2 = np.random.rand(A2.shape[0],A2.shape[1])
+           D2 = (D2 < keep_prob)                       
+           A2 = np.multiply(A2,D2)                     
+           A2 = A2 / keep_prob                         
+		 5 early stopping 早停法
+
+第四周
+神经网络概述
+
+第五周
+反向传播 
+梯度检验 
+随机初始化
+
+第六周
+处理方差和偏差
+评估依据 TP TN F1socre
+
+第七周
+支持向量机 大间距分类器   参数向量和决策边界90正交，想要p*θ充分大，就要投影充分大，θ我们是希望小的，寻找最大投影。
+核函数改造支持向量机，构造非常复杂的非线性分类器、
+
+第八周
+聚类 k-means
+降维 数据压缩 PCA（具有与数据之间最小投射误差的方向向量构成的矩阵，降到几维取几列）
+
+第九周
+异常检测
+推荐系统
+
+第十周
+####################################################################################################################################################
+第一门课
+第一周 结构化数据 非结构化数据 音频 图像 文本
+第二周 逻辑回归
+第三周 随机初始化 初始化参数尽量小
+第四周 前向传播和反向传播
+	   Z1 = np.dot(W1,X)+b1
+       A1 = np.tanh(Z1)
+       Z2 = np.dot(W2,A1)+b2
+       A2 = sigmoid(Z2)
+	   
+	   dZ2 = A2 - Y            # 交叉熵loss对应的误差对输入的导数                    
+       dW2 = np.dot(dZ2,A1.T)/m
+       db2 = np.sum(dZ2,axis =1,keepdims = True)/m
+       dZ1 = np.multiply(np.dot(W2.T, dZ2),1 - np.power(A1, 2))
+       dW1 = np.dot(dZ1, X.T)/m
+       db1 = np.sum(dZ1,axis =1,keepdims = True)/m
+
+第二门课
+第一周 方差 偏差 dropout正则化 反向随机失活确保期望值不变  
+       提升训练速度 输入归一化 
+	   梯度消失 梯度爆炸 神经网络权重初始化 
+第二周 随机梯度下降  Mini-batch梯度下降   batch梯度下降(梯度下降)
+       指数加权平均数+带偏差修正的指数加权平均数   
+	   动量梯度下降法 + RMSP = ADAM
+       学习率衰减  不用担心达到局部最优点大多是鞍点
+第三周 Batch归一化(近似白化预处理) 使隐藏单元值得均值和方差标准化 Z有固定的均值和方差 协变量 
+        a）可以设置较大的初始学习率，并且减少对参数初始化的依赖，提高了训练速度；
+　　 	b）这是个正则化模型，因此可以去除dropout和降低L2正则约束参数；
+　　	c）不需要局部响应归一化层；
+　　	d）能防止网络陷入饱和，即消除梯度弥散。
+		类似权值共享的策略，把一整张特征图当做一个神经元进行处理，没有将每个神经元都进行BN
+       减弱了前层参数的作用与后层参数的作用之间的联系，它使得网络每层都可以自己学习，稍稍独立于其它层，这有助于加速整个网络的学习
+       tf.nn.batch_normalization   tf.nn.conv2d  tf.nn.max_poo  tf.nn.softmax  tf.nn.dropout softmax
+	   TensorFlow
+			X = tf.placeholder(tf.float32,shape = [n_x,None],name = "X")
+			Y = tf.placeholder(tf.float32,shape = [n_y,None],name = "Y")
+			W1 = tf.get_variable("W1", [25,12288], initializer = tf.contrib.layers.xavier_initializer(seed = 1))
+			b1 = tf.get_variable("b1", [25,1], initializer = tf.zeros_initializer())
+			W2 = tf.get_variable("W2", [12, 25], initializer = tf.contrib.layers.xavier_initializer(seed = 1))
+			b2 = tf.get_variable("b2", [12,1], initializer = tf.zeros_initializer())
+			W3 = tf.get_variable("W3", [6,12], initializer = tf.contrib.layers.xavier_initializer(seed = 1))
+			b3 = tf.get_variable("b3", [6,1], initializer = tf.zeros_initializer())
+            Z1 = tf.add(tf.matmul(W1,X),b1) 
+			A1 = tf.nn.relu(Z1)             
+			Z2 = tf.add(tf.matmul(W2,A1),b2)
+			A2 = tf.nn.relu(Z2)             
+			Z3 = tf.add(tf.matmul(W3,A2),b3)
+			cost = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits = tf.transpose(Z3), labels = labels = tf.transpose(Y))) 计算损失
+			optimizer = tf.train.AdamOptimizer(learning_rate = learning_rate).minimize(cost)   设定优化器
+			init = tf.global_variables_initializer()
+			with tf.Session() as sess:
+			sess.run(init)
+			分批次传入X Y
+			_ , minibatch_cost = sess.run([optimizer, cost], feed_dict={X: minibatch_X, Y: minibatch_Y})
+			epoch_cost += minibatch_cost / num_minibatches (累加每一批次的cost，求epoch的cost)
+			
+第三门课
+第一周 机器学习策略
+       确定偏差 可避免偏差 方差
+	   确定误差中的主要矛盾
+	   清除标注错误的数据(减少系统性误差) 人工数据合成
+	   迁移学习 预训练和微调
+	   多任务学习 足够的的网络 公用低层次特征 
+	   端到端学习 是否有足够多的数据是前提
+
+第四门课
+第一周 池化 卷积层（参数共享and稀疏链接） 全连接层   (n+2p-f/s)+1 直观上一个卷积核就是一个特征检测器
+	   卷积 n*n*通道数*卷积核个数
+第二周 各种经典网络结构
+       LeNet AlexNet VGG RESNET INCEPTION(https://www.cnblogs.com/dengshunge/p/10808191.html)
+第三周 目标检测
+	   滑动窗口的卷积实现（你想对14*14的图片怎么处理，得到1。就对16*16的图片怎么处理，得到的2*2，直接将四个结果放在一个图中） 问题不能得到准确的边界框的位置。
+	   bounding box预测  （精准边界框的算法是 YOLO 算法，YOLO是针对边界框问题提出的）。
+	   YOLO的生成标签要做好 分成n*n的区域就是n*n*8（pc,xyhw,4个类别），3*3 19*19 34*34 网格越来越小，同一个物体对应不同的网格数，标签也是不同的。 
+	   交并比： 衡量算法准确的好坏，是一个评价指标
+	   非极大值抑制：同一物体，不同的网格都检测出来，选择pc最大的
+	                 非极大值抑制就会逐一审视剩下的矩形，所有和这个最大的边框有很高交并比，高度重叠的其他边界框，那么这些输出就会被抑制
+	   每个格子只能检测出一个对象，如果想让一个格子检测出多个对象 anchor box :(pc,xyhw,4个类别)*anchor_box_nums
+	   降采样： 降采样指的是成比例缩小特征图宽和高的过程 1stride大于1的pooling 2stride大于1的conv 3stride大于1的 reorg （在YOLOv2的论文里叫passthrough layer）
+	   R-CNN 确定候选区域(图像分割算法) 不会再没有物体的地方滑窗
+第四周 人脸识别(是谁) 和 人脸验证(是不是我)
+       One-shot learning  d函数 Siamese 网络(对于两个不同的输入，运行相同的卷积神经网络，然后比较它们)
+	   Triplet loss :abs(A-P)-abs(N-P)+a<=0 APN三张图片
+	   神经风格迁移
+	   网络中的某一层中,风格cost: gram矩阵=(nc,nh*nw)  两个图片的gram*gram.T的差值 （风格是通道和通道间的差别）
+						内容cost：a_c和a_g对应相减     两个激活值不同或者相似的程度 （内容是激活值的差别）
+       
+第五门课
+第一周 RNN a(t)=g(w*[a(t-1),x(t)]+b)    y(t)=g(w*a(t)+b)
+       语言模型所做的就是，它会告诉你某个特定的句子它出现的概率是多少    字典和莎士比亚语料库(句子)
+	   LSTM 遗忘门 更新门 输出门  a c x
+	   GRU  相关门 更新门         a x
+	   deep RNN
+第二周 O  to  E    热编码到特征词嵌入
+	   不用one-hot，用词嵌入(词汇表征)，算法会考察大量的无标签文本。更低维度(男女,动物,植物...)的特征向量替代原来的10000维的one-hot向量
+       词嵌入在语言模型、机器翻译领域用的少一些(这些任务本身有大量的数据，不适合做迁移学习)
+	   词嵌入再类比推理方面的应用(男-女=国王-王后) 嵌入向量(300,1) = 嵌入矩阵*one-hot向量
+	   可以通过语言模型来生成词向量 apple和orange会得到相似的嵌入
+	   Word2Vec方法(根据词汇表构建词向量)  1 Skip-Gram给定inputword预测上下文https://www.jianshu.com/p/da235893e4a5  2 CBOW给定上下文预测inputword 
+       负采样 skip-gram选择几个负样本输出去更新对应的结点对应的权重，计算效率大大提升
+	   GloVe
+	   嵌入词除偏
+第三周 S2S 注意力机制
+       集束搜索vs贪心搜索
+	   bleu得分 一元词组 二元词组 三元词组的对应得分，每个词会有得分上限对应出现次数
+       注意力机制，每个特征集有一个对应的权值
+	   触发词检测，将对应的声谱图中触发词部分置为1
+
+
+
+
+
+

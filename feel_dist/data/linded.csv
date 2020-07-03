@@ -1,0 +1,11 @@
+link_id,fnode_id,fnode_longitude,fnode_latitude,tnode_id,tnode_longitude,tnode_latitude,link_len,direction
+A,a,0,2,b,1,2,1,1
+B,b,1,2,c,2,2,1,1
+C,c,2,2,d,2,1,1,1
+D,e,0,1,f,1,1,1,1
+E,f,1,1,c,2,2,1,1
+F,f,1,1,g,1,0,1,1
+G,d,2,1,h,2,0,1,1
+H,h,2,0,i,3,0,1,1
+I,i,3,0,j,4,9,1,1
+J,j,4,0,k,5,0,1,1
